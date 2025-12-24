@@ -179,3 +179,14 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Examples folder (示例 Excel 文件)
+examples/
+
+# IDE / Editor
+.vscode/
+.kiro/
+.idea/
+
+# uv init 生成的默认文件
+main.py
