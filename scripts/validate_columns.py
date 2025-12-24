@@ -28,6 +28,7 @@ def validate_columns(
     file_path: str,
     header_row: int = 0,
     required_columns: list[str] | None = None,
+    sheet_name: str | int = 0,
 ) -> dict:
     """
     校验 Excel 列名是否符合预期模板
@@ -36,6 +37,7 @@ def validate_columns(
         file_path: Excel 文件路径
         header_row: 表头所在行（从 0 开始）
         required_columns: 必需的列名列表，为 None 时使用考勤表模板
+        sheet_name: 工作表名称或索引，默认第一个 sheet
     
     Returns:
         校验结果字典，包含 valid, missing, extra, matched
@@ -47,7 +49,7 @@ def validate_columns(
     if required_columns is None:
         required_columns = ATTENDANCE_COLUMNS
     
-    df = pd.read_excel(file_path, header=header_row, nrows=0)
+    df = pd.read_excel(file_path, header=header_row, nrows=0, sheet_name=sheet_name)
     actual_columns = [str(c).strip() for c in df.columns.tolist()]
     
     required_set = set(required_columns)
@@ -70,11 +72,13 @@ def main():
     parser = argparse.ArgumentParser(description="校验 Excel 列名是否符合模板")
     parser.add_argument("file", help="Excel 文件路径")
     parser.add_argument("--header-row", type=int, default=0, help="表头所在行，默认 0")
+    parser.add_argument("-s", "--sheet", default="0", help="工作表名称或索引，默认 0")
     
     args = parser.parse_args()
+    sheet = int(args.sheet) if args.sheet.isdigit() else args.sheet
     
     try:
-        result = validate_columns(args.file, header_row=args.header_row)
+        result = validate_columns(args.file, header_row=args.header_row, sheet_name=sheet)
         
         print(f"匹配率: {result['match_rate']:.1%}")
         print(f"匹配列数: {len(result['matched'])}")

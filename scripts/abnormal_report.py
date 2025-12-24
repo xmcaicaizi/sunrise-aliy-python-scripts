@@ -80,6 +80,7 @@ def generate_abnormal_report(
     abnormal_types: list[str] | None = None,
     output_path: str | None = None,
     auto_detect_header: bool = True,
+    sheet_name: str | int = 0,
 ) -> dict[str, pd.DataFrame]:
     """
     生成异常考勤报告
@@ -90,6 +91,7 @@ def generate_abnormal_report(
         abnormal_types: 要筛选的异常类型列表，为 None 时筛选所有类型
         output_path: 输出文件路径，为 None 时不保存
         auto_detect_header: 是否自动检测表头行
+        sheet_name: 工作表名称或索引，默认第一个 sheet
     
     Returns:
         字典，key 为异常类型，value 为对应的 DataFrame
@@ -100,12 +102,12 @@ def generate_abnormal_report(
     
     # 自动检测表头行
     if header_row is None and auto_detect_header:
-        header_row = detect_header_row(file_path)
+        header_row = detect_header_row(file_path, sheet_name=sheet_name)
         print(f"自动检测表头行: {header_row}")
     elif header_row is None:
         header_row = 0
     
-    df = pd.read_excel(file_path, header=header_row)
+    df = pd.read_excel(file_path, header=header_row, sheet_name=sheet_name)
     
     if abnormal_types is None:
         abnormal_types = list(DEFAULT_ABNORMAL_CONDITIONS.keys())
@@ -143,6 +145,7 @@ def main():
     parser = argparse.ArgumentParser(description="生成异常考勤报告")
     parser.add_argument("file", help="Excel 文件路径")
     parser.add_argument("--header-row", type=int, help="表头所在行（不指定则自动检测）")
+    parser.add_argument("-s", "--sheet", default="0", help="工作表名称或索引，默认 0")
     parser.add_argument(
         "-t", "--types",
         nargs="+",
@@ -152,6 +155,7 @@ def main():
     parser.add_argument("-o", "--output", help="输出文件路径")
     
     args = parser.parse_args()
+    sheet = int(args.sheet) if args.sheet.isdigit() else args.sheet
     
     try:
         generate_abnormal_report(
@@ -159,6 +163,7 @@ def main():
             header_row=args.header_row,
             abnormal_types=args.types,
             output_path=args.output,
+            sheet_name=sheet,
         )
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)

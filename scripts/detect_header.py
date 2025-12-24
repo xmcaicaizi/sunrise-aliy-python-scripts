@@ -21,6 +21,7 @@ def detect_header_row(
     file_path: str,
     keywords: list[str] | None = None,
     max_rows: int = 10,
+    sheet_name: str | int = 0,
 ) -> int:
     """
     自动检测真实表头所在行
@@ -29,6 +30,7 @@ def detect_header_row(
         file_path: Excel 文件路径
         keywords: 用于识别表头的关键字列表，默认使用考勤表关键字
         max_rows: 最多检查的行数，默认 10 行
+        sheet_name: 工作表名称或索引，默认第一个 sheet
     
     Returns:
         真实表头所在行索引（从 0 开始）
@@ -41,7 +43,7 @@ def detect_header_row(
         keywords = HEADER_KEYWORDS
     
     # 读取前 N 行，不指定 header
-    df = pd.read_excel(file_path, header=None, nrows=max_rows)
+    df = pd.read_excel(file_path, header=None, nrows=max_rows, sheet_name=sheet_name)
     
     best_row = 0
     best_match_count = 0
@@ -61,11 +63,13 @@ def main():
     parser = argparse.ArgumentParser(description="自动检测 Excel 多级表头")
     parser.add_argument("file", help="Excel 文件路径")
     parser.add_argument("--max-rows", type=int, default=10, help="最多检查的行数，默认 10")
+    parser.add_argument("-s", "--sheet", default="0", help="工作表名称或索引，默认 0")
     
     args = parser.parse_args()
+    sheet = int(args.sheet) if args.sheet.isdigit() else args.sheet
     
     try:
-        header_row = detect_header_row(args.file, max_rows=args.max_rows)
+        header_row = detect_header_row(args.file, max_rows=args.max_rows, sheet_name=sheet)
         print(f"检测到真实表头在第 {header_row + 1} 行（索引 {header_row}）")
         print(f"使用时请设置: --header-row {header_row}")
     except Exception as e:

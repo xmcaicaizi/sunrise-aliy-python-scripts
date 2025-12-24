@@ -32,6 +32,7 @@ def summary_by_employee(
     sum_columns: list[str] | None = None,
     output_path: str | None = None,
     auto_detect_header: bool = True,
+    sheet_name: str | int = 0,
 ) -> pd.DataFrame:
     """
     按工号汇总考勤统计
@@ -42,6 +43,7 @@ def summary_by_employee(
         sum_columns: 要汇总的列名列表，为 None 时使用默认配置
         output_path: 输出文件路径，为 None 时不保存
         auto_detect_header: 是否自动检测表头行
+        sheet_name: 工作表名称或索引，默认第一个 sheet
     
     Returns:
         汇总后的 DataFrame
@@ -52,12 +54,12 @@ def summary_by_employee(
     
     # 自动检测表头行
     if header_row is None and auto_detect_header:
-        header_row = detect_header_row(file_path)
+        header_row = detect_header_row(file_path, sheet_name=sheet_name)
         print(f"自动检测表头行: {header_row}")
     elif header_row is None:
         header_row = 0
     
-    df = pd.read_excel(file_path, header=header_row)
+    df = pd.read_excel(file_path, header=header_row, sheet_name=sheet_name)
     
     if "工号" not in df.columns:
         raise ValueError("数据中缺少'工号'列")
@@ -102,10 +104,12 @@ def main():
     parser = argparse.ArgumentParser(description="按工号汇总考勤统计")
     parser.add_argument("file", help="Excel 文件路径")
     parser.add_argument("--header-row", type=int, help="表头所在行（不指定则自动检测）")
+    parser.add_argument("-s", "--sheet", default="0", help="工作表名称或索引，默认 0")
     parser.add_argument("-c", "--columns", nargs="+", help="要汇总的列名（不指定则使用默认配置）")
     parser.add_argument("-o", "--output", help="输出文件路径")
     
     args = parser.parse_args()
+    sheet = int(args.sheet) if args.sheet.isdigit() else args.sheet
     
     try:
         summary_by_employee(
@@ -113,6 +117,7 @@ def main():
             header_row=args.header_row,
             sum_columns=args.columns,
             output_path=args.output,
+            sheet_name=sheet,
         )
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)
