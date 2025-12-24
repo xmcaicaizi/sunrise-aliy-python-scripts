@@ -56,7 +56,7 @@ def main():
     parser = argparse.ArgumentParser(description="分析 Excel 文件每列的唯一值")
     parser.add_argument("file", help="Excel 文件路径")
     parser.add_argument("--header-row", type=int, default=0, help="表头所在行，默认 0")
-    parser.add_argument("-s", "--sheet", default=0, help="工作表名称或索引，默认 0")
+    parser.add_argument("-s", "--sheet", default="0", help="工作表名称或索引，默认 0")
     parser.add_argument("-c", "--columns", nargs="+", help="指定要分析的列名（可多个）")
     parser.add_argument("--json", action="store_true", help="以 JSON 格式输出")
     
